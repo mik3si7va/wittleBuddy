@@ -6,7 +6,7 @@ The initial embedded controller is an **Arduino Mega 2560**, programmed in objec
 
 ## Current status
 
-**Implemented:** a PlatformIO Mega firmware target, a startup message at 115200 baud, and five class skeletons with empty `begin()` and `update()` methods. The firmware does not instantiate the subsystems or control robot hardware. There are no automated tests yet.
+**Implemented:** a PlatformIO Mega firmware target, a lightweight experiment launcher, and a reusable `UltrasonicSensor` class. The active ultrasonic experiment measures three HC-SR04 sensors and controls red/yellow/green LEDs using the nearest distance. The five subsystem classes remain skeletons with empty `begin()` and `update()` methods and are not instantiated. There are no automated tests yet.
 
 **Planned:** motor and encoder support, odometry and IMU integration, distance sensing, battery monitoring, communication with higher-level controllers, and a behaviour state machine.
 
@@ -22,7 +22,7 @@ The initial embedded controller is an **Arduino Mega 2560**, programmed in objec
 | `PowerSystem` | Battery voltage monitoring and power state |
 | `Communication` | Higher-level controllers, telemetry and commands |
 
-`main.cpp` stays small. Future application orchestration and a behaviour state machine will coordinate these systems. Hardware models, pin assignments, wiring, protocols and timing contracts remain TBD. See [architecture](docs/architecture.md), [hardware inventory](docs/hardware.md) and [roadmap](docs/roadmap.md).
+`main.cpp` stays small. Future application orchestration and a behaviour state machine will coordinate these systems. The active ultrasonic experiment has defined pin assignments; broader robot wiring, protocols and timing contracts remain TBD. See [architecture](docs/architecture.md), [hardware inventory](docs/hardware.md) and [roadmap](docs/roadmap.md).
 
 ## Repository structure
 
@@ -35,10 +35,10 @@ wittleBuddy/
 │   ├── architecture.md
 │   ├── hardware.md
 │   └── roadmap.md
-├── include/                     # Five subsystem class interfaces
-├── src/                         # main.cpp and five subsystem skeletons
+├── include/                     # UltrasonicSensor.h and subsystem interfaces
+├── src/                         # Launcher, UltrasonicSensor.cpp and subsystem skeletons
 ├── test/                        # Reserved for PlatformIO tests
-└── experiments/                 # Isolated investigations, outside firmware build
+└── experiments/                 # Implementations; selected experiment is built
     ├── motor/
     ├── encoder/
     ├── ultrasonic/
@@ -47,7 +47,24 @@ wittleBuddy/
     └── lidar/
 ```
 
-PlatformIO compiles `src/` and makes `include/` available to it. Experiment directories contain placeholders only. Add local reusable libraries under `lib/` when there is an actual need.
+PlatformIO makes `include/` available for headers. The root configuration sets `src_dir = .` and explicitly selects these implementation files with `build_src_filter`:
+
+```ini
+build_src_filter =
+    +<src/main.cpp>
+    +<src/UltrasonicSensor.cpp>
+    +<experiments/ultrasonic/exp001.cpp>
+```
+
+This compiles the experiment in place, without copying it into `src/` or creating another project or environment. Other experiments and the subsystem skeletons are not compiled.
+
+## Running experiments
+
+`src/main.cpp` owns the Arduino `setup()` and `loop()` functions. It includes the experiment header and delegates to `ultrasonicExperimentSetup()` and `ultrasonicExperimentLoop()`. The implementation stays in `experiments/ultrasonic/exp001.cpp`.
+
+The experiment creates `left`, `front`, and `right` sensor objects. Each stores its own TRIG/ECHO pins; `begin()` configures them and `measureDistance()` returns centimeters. The experiment compares all three readings and selects RED at <= 10 cm, YELLOW at <= 20 cm, or GREEN otherwise. See the [ultrasonic experiment README](experiments/ultrasonic/README.md) for pins and measurement details.
+
+To activate a future experiment, keep its implementation and header under its own `experiments/` directory, update the header and calls in `src/main.cpp`, and replace the experiment path in `build_src_filter`. Explicitly include any reusable implementation files it needs. Keep Arduino entry points in `main.cpp`; no selector or registry is required.
 
 ## Development setup
 
@@ -83,17 +100,21 @@ On the initial machine, USB ID `2341:0042` identifies the Mega 2560 R3 at `/dev/
 pio run -e mega2560 -t upload --upload-port /dev/ttyACM0
 ```
 
-Then monitor serial output:
+For firmware that uses Serial, monitor output with:
 
 ```sh
 pio device monitor -e mega2560 --port /dev/ttyACM0 --baud 115200
 ```
 
-Exit the monitor with Ctrl+C and close it before uploading. The firmware prints `Wittle Buddy starting up!` once during setup; press the board's reset button with the monitor open if you missed it. Firmware upload and the startup message have been verified on the connected Mega; see the validation record below.
+Exit the monitor with Ctrl+C and close it before uploading. The current ultrasonic experiment does not initialize Serial or print output; observe its LEDs. The startup message in the historical validation record below belongs to the earlier minimal firmware.
 
 For serial access, inspect `id` and `ls -l /dev/ttyACM0`. On the initial Fedora machine the user is already in `dialout`, and the device is read/write for that group. No extra udev rules were needed for this connected board. Review any future permission change explicitly rather than granting world-writable access.
 
-## Initial validation
+## Current build validation
+
+The sensor-class refactor passed `pio run -e mega2560`: flash usage was 2,348 / 253,952 bytes and RAM usage was 21 / 8,192 bytes. This verified compilation and linking; no firmware upload was performed during the refactor.
+
+## Initial validation (historical)
 
 On 2026-09-05, `pio run -e mega2560` succeeded on Fedora 44 with PlatformIO Core 6.1.19, Atmel AVR 5.3.0, AVR GCC 7.3.0 and Arduino AVR framework package 5.4.0. Flash usage was 1,856 / 253,952 bytes; RAM usage was 188 / 8,192 bytes. AVRDUDE 6.3 was installed separately through PlatformIO and its help command ran successfully. PlatformIO device enumeration and the monitor CLI were available.
 

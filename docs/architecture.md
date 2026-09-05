@@ -2,7 +2,7 @@
 
 ## Current implementation
 
-The project uses PlatformIO's Arduino framework for the Mega 2560. `src/main.cpp` initializes Serial at 115200 baud and prints a startup message. Its loop is empty. Each subsystem has a header in `include/` and a source in `src/`; `begin()` and `update()` are empty placeholders. No subsystem is instantiated by the initial firmware.
+The project uses PlatformIO's Arduino framework for the Mega 2560. `src/main.cpp` owns Arduino `setup()` and `loop()` and delegates to the active ultrasonic experiment through `exp001.h`. The experiment owns three `UltrasonicSensor` objects, compares their distances, and controls traffic-light LEDs. `UltrasonicSensor` stores one TRIG/ECHO pin pair and provides `begin()` and `measureDistance()`; it has no LED or navigation responsibilities. Each subsystem has a header in `include/` and a source in `src/`; `begin()` and `update()` are empty placeholders. No subsystem is instantiated or included in the current build filter.
 
 ## Planned boundaries
 
@@ -26,4 +26,6 @@ Plan memory use and update timing within the Mega's resource limits. Higher-leve
 
 ## Experiments and validation
 
-`experiments/` holds isolated investigations and is excluded from the main build by location. Record confirmed wiring and reproducible observations there before integrating a driver. `test/` is reserved for meaningful tests as contracts are defined. The initial check is compilation; hardware validation requires an authorized upload and observation of the serial startup message.
+`experiments/` holds investigations compiled in place when explicitly selected. The root `platformio.ini` uses `src_dir = .` and `build_src_filter` to include only `src/main.cpp`, `src/UltrasonicSensor.cpp`, and `experiments/ultrasonic/exp001.cpp`. Switching experiments means updating the launcher header/calls and the source filter within the same Mega environment.
+
+Record wiring and reproducible observations in the experiment README. `test/` is reserved for meaningful tests as contracts are defined. The current sensor refactor passed compilation and linking without uploading. Hardware validation of the active experiment uses sensor readings and LED responses; it has no serial output. See the [ultrasonic experiment](../experiments/ultrasonic/README.md).
