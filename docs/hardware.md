@@ -1,11 +1,11 @@
 # Hardware inventory
 
-Wittle's intended form is a modular two-wheel-drive robot. Only the initial controller choice and its USB enumeration have been confirmed here. Inventory entries below do not imply that components are installed or supported in firmware.
+Wittle's intended form is a modular two-wheel-drive robot. The initial controller choice, USB enumeration, firmware upload and serial startup output have been confirmed here. Inventory entries below do not imply that components are installed or supported in firmware.
 
 | Item | Status / quantity | Model / specification | Connection / pins | Notes |
 | --- | --- | --- | --- | --- |
 | Primary controller | Confirmed, 1 detected | Arduino Mega 2560 R3 | USB serial; application pins TBD | Initial Arduino framework target |
-| USB connection | Device enumerated | USB ID 2341:0042 | `/dev/ttyACM0` at initial inspection | Upload and startup output not yet verified |
+| USB connection | Upload and serial output verified | USB ID 2341:0042 | `/dev/ttyACM0` during validation | AVRDUDE wrote and verified 1,856 bytes; startup message received at 115200 baud after reset |
 | Chassis / wheels | Planned 2WD layout | TBD | TBD | Dimensions and wheel geometry TBD |
 | DC motors | Planned, 2 | TBD | TBD | Ratings and gearing TBD |
 | Motor driver(s) | TBD | TBD | TBD | Select after motor requirements |

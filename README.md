@@ -89,7 +89,7 @@ Then monitor serial output:
 pio device monitor -e mega2560 --port /dev/ttyACM0 --baud 115200
 ```
 
-Exit the monitor with Ctrl+C and close it before uploading. The firmware prints `Wittle Buddy starting up!` once during setup; press the board's reset button with the monitor open if you missed it. An upload and observed message are still needed to validate firmware execution and serial communication end to end.
+Exit the monitor with Ctrl+C and close it before uploading. The firmware prints `Wittle Buddy starting up!` once during setup; press the board's reset button with the monitor open if you missed it. Firmware upload and the startup message have been verified on the connected Mega; see the validation record below.
 
 For serial access, inspect `id` and `ls -l /dev/ttyACM0`. On the initial Fedora machine the user is already in `dialout`, and the device is read/write for that group. No extra udev rules were needed for this connected board. Review any future permission change explicitly rather than granting world-writable access.
 
@@ -97,4 +97,10 @@ For serial access, inspect `id` and `ls -l /dev/ttyACM0`. On the initial Fedora 
 
 On 2026-09-05, `pio run -e mega2560` succeeded on Fedora 44 with PlatformIO Core 6.1.19, Atmel AVR 5.3.0, AVR GCC 7.3.0 and Arduino AVR framework package 5.4.0. Flash usage was 1,856 / 253,952 bytes; RAM usage was 188 / 8,192 bytes. AVRDUDE 6.3 was installed separately through PlatformIO and its help command ran successfully. PlatformIO device enumeration and the monitor CLI were available.
 
-The connected Mega was detected and serial access permissions checked. No firmware was uploaded and no startup output was observed; those hardware checks remain pending. No system packages, group memberships or udev rules were changed.
+The connected Arduino Mega 2560 at `/dev/ttyACM0` was successfully flashed using AVRDUDE. All 1,856 bytes were written and verified. After reset, serial communication at 115200 baud was verified with the exact startup output:
+
+```text
+Wittle Buddy starting up!
+```
+
+The received bytes were `b'Wittle Buddy starting up!\r\n'`. This confirms the minimal firmware runs and serial communication works; robot subsystems remain unimplemented. Serial access permissions were checked, and no system packages, group memberships or udev rules were changed.

@@ -12,7 +12,7 @@ This is a sequence of learning milestones, not a delivery schedule. Hardware and
 
 - Completed: firmware compiles on Fedora; memory usage and tool versions are recorded in the README.
 - Completed: Mega detected at `/dev/ttyACM0`; current user has read/write access.
-- Pending explicit upload authorization: flash firmware and observe the startup message at 115200 baud.
+- Completed: AVRDUDE uploaded and verified all 1,856 bytes on the Mega at `/dev/ttyACM0`; after reset, `Wittle Buddy starting up!` was received at 115200 baud.
 
 ## Hardware decisions and isolated experiments — planned
 
