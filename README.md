@@ -6,11 +6,27 @@ The initial embedded controller is an **Arduino Mega 2560**, programmed in objec
 
 ## Current status
 
+**Body assembled:** the first 2WD chassis is built, with two acrylic decks, two geared DC motors and drive wheels, and two swivel casters. Motor leads have been attached, and the upper deck is in place for mounting electronics. See the [assembly photos](#body-assembly-ass001) below.
+
 **Implemented:** a PlatformIO Mega firmware target, a lightweight experiment launcher, and a reusable `UltrasonicSensor` class. The active ultrasonic experiment measures three HC-SR04 sensors and controls red/yellow/green LEDs using the nearest distance. The five subsystem classes remain skeletons with empty `begin()` and `update()` methods and are not instantiated. There are no automated tests yet.
 
 **Planned:** motor and encoder support, odometry and IMU integration, distance sensing, battery monitoring, communication with higher-level controllers, and a behaviour state machine.
 
 **Experimental / future ideas:** 360-degree LiDAR integration, mapping, autonomous navigation, ESP32 cooperation and expressive behaviours. These are exploration directions, not working capabilities or settled designs.
+
+## Body assembly (ass001)
+
+Wittle now has an assembled body. Photos 007–011 document the build from the loose chassis parts through motor lead preparation to the assembled base and upper deck.
+
+The two motors and drive wheels are mounted to the lower chassis, with two swivel casters providing support. Standoffs separate the clear acrylic decks, leaving space for electronics. Controller, motor-driver, sensor and power integration are still ahead; powered driving has not been recorded at this stage.
+
+| Parts laid out | Motor terminal wiring | Motor leads prepared |
+| --- | --- | --- |
+| ![007: Chassis plates, two motors, wheels, casters and mounting hardware](docs/imgs/007_ass001.jpeg) | ![008: Close-up of motor terminal wiring and insulating sleeves](docs/imgs/008_ass001.jpeg) | ![009: Both geared motors with leads attached](docs/imgs/009_ass001.jpeg) |
+
+| Assembled underside | Upper deck installed |
+| --- | --- |
+| ![010: Underside showing the two mounted motors, drive wheels and swivel casters](docs/imgs/010_ass001.jpeg) | ![011: Assembled body with the upper acrylic deck mounted on standoffs](docs/imgs/011_ass001.jpeg) |
 
 ## Architecture
 
