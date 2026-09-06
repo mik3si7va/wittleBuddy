@@ -2,7 +2,7 @@
 
 ## exp001: three sensors and traffic-light LEDs
 
-This is the currently selected experiment in the root Mega 2560 build. It measures three HC-SR04 sensors sequentially, finds the minimum distance, and lights one LED:
+This earlier experiment remains available; the root Mega 2560 build currently selects motor exp003. Its pins overlap motor-driver wiring, so disconnect that wiring before restoring this experiment. It measures three HC-SR04 sensors sequentially, finds the minimum distance, and lights one LED:
 
 | Minimum distance | LED |
 | --- | --- |
@@ -57,9 +57,9 @@ The sensor class only handles the sensor. The experiment owns the objects and ke
 
 ## Launcher and build
 
-`src/main.cpp` includes `exp001.h` and calls `ultrasonicExperimentSetup()` from Arduino `setup()` and `ultrasonicExperimentLoop()` from Arduino `loop()`. The experiment does not define Arduino entry points or require including a `.cpp` file.
+To select this experiment, configure `src/main.cpp` to include `exp001.h` and call `ultrasonicExperimentSetup()` from Arduino `setup()` and `ultrasonicExperimentLoop()` from Arduino `loop()`. The experiment does not define Arduino entry points or require including a `.cpp` file.
 
-The root `platformio.ini` sets `src_dir = .` so its source filter can select files under both `src/` and `experiments/`:
+The root `platformio.ini` sets `src_dir = .`. To restore this experiment, use this source filter (the current filter selects motor exp003):
 
 ```ini
 build_src_filter =
@@ -76,4 +76,4 @@ pio run -e mega2560
 
 The refactor passed this build with 2,348 bytes of flash and 21 bytes of RAM used. No upload was performed during the refactor; this result verifies compilation and linking, not hardware behavior after the refactor.
 
-Other experiments remain excluded. To change the active experiment, update the launcher header/calls and source filter as described in the [root README](../../README.md#running-experiments). Keep one root project and the existing Mega environment.
+With that selection, other experiments remain excluded. To change the active experiment, update the launcher header/calls and source filter as described in the [root README](../../README.md#running-experiments). Keep one root project and the existing Mega environment.

@@ -4,3 +4,5 @@
 .vscode/.browse.c_cpp.db*
 sdkconfig.esp32_xbox
 sdkconfig.esp32_xbox.old
+sdkconfig.esp32_xbox_exp003
+sdkconfig.esp32_xbox_exp003.old

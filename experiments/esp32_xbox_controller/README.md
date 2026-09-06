@@ -1,6 +1,8 @@
-# ESP32 Xbox controller and traffic-light experiment
+# ESP32 Xbox controller experiments
 
 Standalone PlatformIO project for the **original ESP32-WROOM / DOIT ESP32 DEVKIT V1** (4 MB flash). The root Mega build, production sources, and ultrasonic experiments are independent and unchanged. Open this directory as the PlatformIO project, or use the commands below.
+
+**Milestone — 2026-09-06:** exp003 supplied the wireless input for [Wittle's first wireless drive](../../docs/videos/001_mileStone001.mp4). The ESP32 is the Bluetooth/UART helper; the Mega remains the brain and controls the motors. See [Experiment 003](#experiment-003-uart-motor-control) for its explicit build commands. The setup, LED mapping and validation below describe the original traffic-light experiment (`esp32_xbox`, still the default environment).
 
 ## Build and upload
 
@@ -104,6 +106,7 @@ This uses the [official Bluepad32 ESP32 raw API example](https://github.com/rica
 | `platformio.ini` | Separate ESP32 environment and serial ports |
 | `esp32_xbox.code-workspace` | Opens the experiment with its own ESP32 editor configuration |
 | `src/main.cpp` | Bluepad32 callbacks, diagnostics and LED mapping |
+| `src/exp003.cpp` | Right-stick differential mixing, UART motor commands and input timeout |
 | `CMakeLists.txt` | ESP-IDF project and dependency component paths |
 | `src/CMakeLists.txt` | Registers the C++ application component |
 | `prepare_bluepad32.py` | Reproducible source download and BTstack integration |
@@ -128,3 +131,47 @@ Hardware session notes (user-tested):
 - Missing-header squiggles came from the root Mega/AVR editor configuration. Generated ESP32 IntelliSense metadata and added a dedicated workspace; firmware code stayed unchanged.
 
 Physical testing was performed by the user, not the coding agent. Long-term connection stability and optional address filtering have not been verified.
+
+## Experiment 003: UART motor control
+
+`src/exp003.cpp` reuses the working Bluepad32 platform callbacks, discovery,
+allowlist handling and pairing-key policy from `src/main.cpp`. The original
+traffic-light source and `esp32_xbox` environment remain available. Select the
+new `esp32_xbox_exp003` environment to build the motor sender with ESP-IDF.
+The existing configuration has an empty controller allowlist address and keeps
+pairing keys on boot; exp003 preserves those settings.
+
+**Source/session discrepancy:** the session description says left stick; [the current source](src/exp003.cpp) reads `axis_rx` and `axis_ry`, so exp003 uses the **right stick**. Buttons, triggers and the left stick do not control motors here; exp003 does not drive the traffic-light LEDs.
+
+Right-stick RX/RY use a 50-count per-axis deadzone, rescaled to full range.
+Forward is negative RY, and right turn is positive RX. Mixing is
+`left = forward + turn`, `right = forward - turn`; both outputs are scaled
+proportionally when either exceeds 255. Axis values outside -512..512 cause stop; +512 is clamped to +511. After the inclusive ±50 deadzone, each axis is rescaled using its negative/positive full-scale limit (512/511) with integer arithmetic. No ESP32 motor-driver pins are used.
+
+Connect GPIO17 TX2 to Mega RX1 pin 19 and share ground. UART2 is 115200 8N1,
+TX only; leave Mega TX1 disconnected. Packets are ASCII `left,right\n`, with
+signed integer values -255..255. Positive is forward; zero is stop.
+Startup and controller-ready events send `0,0`; the first ready gamepad is active and additional controllers are rejected until it disconnects. The 50 ms timer keeps sending zero while waiting/disconnected. There is no separate arming button.
+Commands repeat every 50 ms. Detected disconnect or unusable reports send `0,0`
+immediately; absence of fresh input for 300 ms stops at the next 50 ms tick.
+Some controllers may suppress unchanged reports: this deliberately stops on
+stale input rather than assuming that a held command remains usable.
+USB diagnostics show connection/input state, raw right-stick axes, motor values
+and the transmitted packet every 500 ms (`[STATE]`), plus `[BOOT]`, Bluetooth connection events and `[STOP]` reasons. Raw axes retain their last values after stopping; `usable` and transmitted motor values indicate the stop. The Mega independently validates packets and stops after 400 ms without valid commands.
+
+For exp003 pairing-key recovery or optional address restriction, edit the constants in `src/exp003.cpp`; the earlier instructions referencing `src/main.cpp` apply to the LED environment.
+
+The reported first drive proved the complete wireless chain with USB power-bank control power and a separate 4.5 V motor supply. It does not constitute exhaustive disconnect/timeout testing. See the [power lessons](../../README.md#power-debugging-a-small-power-bank-big-moment).
+
+From the repository root:
+
+```bash
+pio device list
+pio run -d experiments/esp32_xbox_controller -e esp32_xbox_exp003
+pio run -d experiments/esp32_xbox_controller -e esp32_xbox_exp003 -t upload --upload-port /dev/ttyUSB0
+pio device monitor -d experiments/esp32_xbox_controller -e esp32_xbox_exp003 --port /dev/ttyUSB0 --baud 115200
+```
+
+Replace `/dev/ttyUSB0` with the actual ESP32 USB port. Close monitors before
+uploading; Ctrl+C exits. The Mega has its own separate root PlatformIO build;
+see the [motor experiment](../motor/README.md). Keep wheels raised during tests.

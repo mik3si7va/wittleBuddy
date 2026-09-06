@@ -1,10 +1,10 @@
 #include <Arduino.h>
-#include "../experiments/ultrasonic/exp001.h"
+#include "../experiments/motor/exp003.h"
 
 void setup() {
-    ultrasonicExperimentSetup();
+    motorExperimentSetup();
 }
 
 void loop() {
-    ultrasonicExperimentLoop();
+    motorExperimentLoop();
 }
